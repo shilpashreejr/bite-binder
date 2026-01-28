@@ -76,9 +76,9 @@
 - [X] Add focused tests for search/filter behavior
 
 ### Performance & Security
-- [ ] Sanitize text rendering
-- [ ] Add basic rate limiting for API routes
-- [ ] Ensure recipe data scoping if auth added
+- [X] Sanitize text rendering
+- [X] Add basic rate limiting for API routes
+- [X] Ensure recipe data scoping if auth added
 
 ### Deployment
 - [ ] Configure Vercel deployment

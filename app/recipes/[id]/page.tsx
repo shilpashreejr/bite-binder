@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { sanitizePlainText } from "@/lib/utils";
 
 export default function RecipeDetailPage() {
   const heroImage =
@@ -15,6 +16,7 @@ export default function RecipeDetailPage() {
     content:
       "Ingredients:\n- 2 salmon fillets\n- 1 orange, sliced\n- 1 tbsp olive oil\n- 1 tsp flaky salt\n- Fresh dill\n\nSteps:\n1. Heat oven to 400F.\n2. Arrange salmon and citrus on a sheet pan.\n3. Drizzle with olive oil, season, and roast 12-15 minutes.\n4. Finish with dill and serve.",
   };
+  const safeContent = sanitizePlainText(recipe.content);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
@@ -59,7 +61,7 @@ export default function RecipeDetailPage() {
           <Card className="rounded-3xl border border-stone-200 bg-white/90 shadow-sm">
             <CardContent className="prose prose-stone max-w-none px-8 py-6">
               <pre className="whitespace-pre-wrap text-sm text-stone-600">
-                {recipe.content}
+                {safeContent}
               </pre>
             </CardContent>
           </Card>

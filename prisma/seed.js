@@ -12,6 +12,7 @@ async function main() {
     await prisma.recipe.createMany({
       data: [
         {
+          userId: "guest",
           title: "Classic Pancakes",
           summary: "Fluffy pancakes with a simple batter.",
           content:
@@ -19,6 +20,7 @@ async function main() {
           tags: ["breakfast", "easy", "classic"],
         },
         {
+          userId: "guest",
           title: "One-Pot Tomato Pasta",
           summary: "Fast pasta dinner cooked in one pot.",
           content:

@@ -8,6 +8,7 @@ datasource db {
 
 model Recipe {
   id        String   @id @default(cuid())
+  userId    String   @default("guest")
   title     String
   summary   String?
   content   String
@@ -15,4 +16,6 @@ model Recipe {
   favorite  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

@@ -5,8 +5,16 @@ import {
   recipeOutputSchema,
   recipeQuerySchema,
 } from "@/lib/validation/recipe";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getUserId } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
+  const rate = checkRateLimit(request);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
+  const userId = getUserId(request);
   const url = new URL(request.url);
   const searchParams = Object.fromEntries(url.searchParams.entries());
   const parsed = recipeQuerySchema.safeParse(searchParams);
@@ -22,6 +30,7 @@ export async function GET(request: NextRequest) {
 
   const recipes = await prisma.recipe.findMany({
     where: {
+      userId,
       ...(search
         ? {
             OR: [
@@ -43,6 +52,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: Request) {
+  const rate = checkRateLimit(request);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
   let body: unknown;
 
   try {
@@ -62,6 +76,7 @@ export async function POST(request: Request) {
 
   const recipe = await prisma.recipe.create({
     data: {
+      userId: getUserId(request),
       title: parsed.data.title,
       summary: parsed.data.summary ?? null,
       content: parsed.data.content,

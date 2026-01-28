@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { recipeParseSchema } from "@/lib/validation/recipe";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 function extractTitle(html: string) {
   const ogTitleMatch = html.match(
@@ -26,6 +27,11 @@ function extractBodyText(html: string) {
 }
 
 export async function POST(request: Request) {
+  const rate = checkRateLimit(request);
+  if (!rate.allowed) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
+
   let body: unknown;
 
   try {
