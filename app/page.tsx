@@ -8,6 +8,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
+export type RecipeItem = {
+  id: string;
+  title: string;
+  summary: string;
+  tags: string[];
+  favorite: boolean;
+};
+
+export function filterRecipes(
+  recipes: RecipeItem[],
+  searchValue: string,
+  activeTags: string[],
+  favoritesOnly: boolean,
+) {
+  const normalizedSearch = searchValue.trim().toLowerCase();
+
+  return recipes.filter((recipe) => {
+    const matchesSearch = normalizedSearch
+      ? [recipe.title, recipe.summary, recipe.tags.join(" ")]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch)
+      : true;
+    const matchesTags = activeTags.length
+      ? activeTags.every((tag) => recipe.tags.includes(tag))
+      : true;
+    const matchesFavorite = favoritesOnly ? recipe.favorite : true;
+    return matchesSearch && matchesTags && matchesFavorite;
+  });
+}
+
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,24 +91,10 @@ function HomeContent() {
     setSearchTerm(searchValue);
   }, [searchValue]);
 
-  const filteredRecipes = useMemo(() => {
-    return recipes.filter((recipe) => {
-      const matchesSearch = searchValue
-        ? [
-            recipe.title,
-            recipe.summary,
-            recipe.tags.join(" "),
-          ].join(" ")
-            .toLowerCase()
-            .includes(searchValue.toLowerCase())
-        : true;
-      const matchesTags = activeTags.length
-        ? activeTags.every((tag) => recipe.tags.includes(tag))
-        : true;
-      const matchesFavorite = favoritesOnly ? recipe.favorite : true;
-      return matchesSearch && matchesTags && matchesFavorite;
-    });
-  }, [activeTags, favoritesOnly, recipes, searchValue]);
+  const filteredRecipes = useMemo(
+    () => filterRecipes(recipes, searchValue, activeTags, favoritesOnly),
+    [activeTags, favoritesOnly, recipes, searchValue],
+  );
 
   const updateQuery = (next: {
     search?: string;
