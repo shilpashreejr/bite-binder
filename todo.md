@@ -48,11 +48,11 @@
 - [X] Show full recipe content on detail view
 
 ### Search + Filter
-- [ ] Add search input with submit
-- [ ] Add tag multi-select filters
-- [ ] Add favorites-only filter
-- [ ] Persist filters in query params
-- [ ] Add clear filters button
+- [X] Add search input with submit
+- [X] Add tag multi-select filters
+- [X] Add favorites-only filter
+- [X] Persist filters in query params
+- [X] Add clear filters button
 
 ## Phase 4: Capture Sources (Week 4-5)
 

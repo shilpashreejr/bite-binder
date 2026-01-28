@@ -1,35 +1,141 @@
+"use client";
+
 import Link from "next/link";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const heroImage =
     "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=2400&q=80";
-  const recipes = [
-    {
-      id: "matcha-morning",
-      title: "Matcha Morning Oats",
-      summary: "Creamy oats with citrus zest and toasted seeds.",
-      tags: ["breakfast", "quick", "vegan"],
-      favorite: true,
-    },
-    {
-      id: "ginger-noodle-bowl",
-      title: "Ginger Noodle Bowl",
-      summary: "Bright, savory noodles with crisp vegetables.",
-      tags: ["lunch", "gluten-free"],
-      favorite: false,
-    },
-    {
-      id: "citrus-salmon",
-      title: "Citrus Sheet-Pan Salmon",
-      summary: "One-pan dinner with herbs and mellow citrus.",
-      tags: ["dinner", "protein"],
-      favorite: true,
-    },
+  const tagOptions = [
+    "breakfast",
+    "quick",
+    "vegan",
+    "lunch",
+    "gluten-free",
+    "dinner",
+    "protein",
   ];
+  const recipes = useMemo(
+    () => [
+      {
+        id: "matcha-morning",
+        title: "Matcha Morning Oats",
+        summary: "Creamy oats with citrus zest and toasted seeds.",
+        tags: ["breakfast", "quick", "vegan"],
+        favorite: true,
+      },
+      {
+        id: "ginger-noodle-bowl",
+        title: "Ginger Noodle Bowl",
+        summary: "Bright, savory noodles with crisp vegetables.",
+        tags: ["lunch", "gluten-free"],
+        favorite: false,
+      },
+      {
+        id: "citrus-salmon",
+        title: "Citrus Sheet-Pan Salmon",
+        summary: "One-pan dinner with herbs and mellow citrus.",
+        tags: ["dinner", "protein"],
+        favorite: true,
+      },
+    ],
+    [],
+  );
+  const searchValue = searchParams.get("search") ?? "";
+  const activeTags = (searchParams.get("tags") ?? "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  const favoritesOnly = searchParams.get("favorite") === "true";
+  const [searchTerm, setSearchTerm] = useState(searchValue);
+
+  useEffect(() => {
+    setSearchTerm(searchValue);
+  }, [searchValue]);
+
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      const matchesSearch = searchValue
+        ? [
+            recipe.title,
+            recipe.summary,
+            recipe.tags.join(" "),
+          ].join(" ")
+            .toLowerCase()
+            .includes(searchValue.toLowerCase())
+        : true;
+      const matchesTags = activeTags.length
+        ? activeTags.every((tag) => recipe.tags.includes(tag))
+        : true;
+      const matchesFavorite = favoritesOnly ? recipe.favorite : true;
+      return matchesSearch && matchesTags && matchesFavorite;
+    });
+  }, [activeTags, favoritesOnly, recipes, searchValue]);
+
+  const updateQuery = (next: {
+    search?: string;
+    tags?: string[];
+    favorite?: boolean;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (next.search !== undefined) {
+      if (next.search.trim()) {
+        params.set("search", next.search.trim());
+      } else {
+        params.delete("search");
+      }
+    }
+
+    if (next.tags !== undefined) {
+      if (next.tags.length) {
+        params.set("tags", next.tags.join(","));
+      } else {
+        params.delete("tags");
+      }
+    }
+
+    if (next.favorite !== undefined) {
+      if (next.favorite) {
+        params.set("favorite", "true");
+      } else {
+        params.delete("favorite");
+      }
+    }
+
+    const query = params.toString();
+    router.replace(query ? `/?${query}` : "/");
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    updateQuery({ search: searchTerm });
+  };
+
+  const toggleTag = (tag: string) => {
+    const nextTags = activeTags.includes(tag)
+      ? activeTags.filter((item) => item !== tag)
+      : [...activeTags, tag];
+    updateQuery({ tags: nextTags });
+  };
+
+  const toggleFavorites = () => {
+    updateQuery({ favorite: !favoritesOnly });
+  };
+
+  const clearFilters = () => {
+    updateQuery({ search: "", tags: [], favorite: false });
+  };
+
+  const hasFilters =
+    searchValue.trim().length > 0 || activeTags.length > 0 || favoritesOnly;
 
   return (
     <div className="min-h-screen bg-[#f4f1ea] text-stone-900">
@@ -76,27 +182,63 @@ export default function Home() {
                   clean archive that always feels composed.
                 </p>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <form
+                className="flex flex-col gap-3 sm:flex-row"
+                onSubmit={handleSearchSubmit}
+              >
                 <div className="flex-1">
                   <Input
                     placeholder="Search recipes, ingredients, or tags"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
                     className="h-12 rounded-full border-white/20 bg-white/90 px-5 text-stone-900"
                   />
                 </div>
-                <Button className="h-12 rounded-full bg-stone-900 px-6 text-stone-50 hover:bg-stone-800">
+                <Button
+                  type="submit"
+                  className="h-12 rounded-full bg-stone-900 px-6 text-stone-50 hover:bg-stone-800"
+                >
                   Search
                 </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {["Breakfast", "Quick", "Vegan", "Favorites"].map((filter) => (
-                  <Badge
-                    key={filter}
-                    variant="secondary"
-                    className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-stone-100"
+              </form>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`rounded-full border-white/40 px-4 text-xs uppercase tracking-[0.2em] text-stone-100 ${
+                    favoritesOnly ? "bg-white/20" : "bg-transparent"
+                  }`}
+                  onClick={toggleFavorites}
+                >
+                  Favorites
+                </Button>
+                {tagOptions.map((tag) => {
+                  const isActive = activeTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium capitalize ${
+                        isActive
+                          ? "border-white/60 bg-white/25 text-stone-100"
+                          : "border-white/20 bg-white/10 text-stone-200"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+                {hasFilters ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="rounded-full text-xs text-stone-200"
+                    onClick={clearFilters}
                   >
-                    {filter}
-                  </Badge>
-                ))}
+                    Clear filters
+                  </Button>
+                ) : null}
               </div>
             </div>
           </section>
@@ -114,7 +256,7 @@ export default function Home() {
               </Button>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {recipes.map((recipe) => (
+              {filteredRecipes.map((recipe) => (
                 <Card
                   key={recipe.id}
                   className="rounded-2xl border border-stone-200 bg-white/90 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
@@ -159,9 +301,25 @@ export default function Home() {
                 </Card>
               ))}
             </div>
+            {filteredRecipes.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-white/70 p-8 text-center text-sm text-stone-500">
+                No recipes match your filters. Try clearing a tag or searching
+                again.
+              </div>
+            ) : null}
           </section>
         </main>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={<div className="min-h-screen bg-[#f4f1ea] text-stone-900" />}
+    >
+      <HomeContent />
+    </Suspense>
   );
 }
