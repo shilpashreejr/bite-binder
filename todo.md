@@ -57,16 +57,16 @@
 ## Phase 4: Capture Sources (Week 4-5)
 
 ### Capture UI
-- [ ] Add capture source tabs: Paste, URL, Screenshot, Social
-- [ ] Add text paste input and preview
-- [ ] Add URL input with parse action
-- [ ] Add screenshot upload input
-- [ ] Add social link input
+- [X] Add capture source tabs: Paste, URL, Screenshot, Social
+- [X] Add text paste input and preview
+- [X] Add URL input with parse action
+- [X] Add screenshot upload input
+- [X] Add social link input
 
 ### Capture Behavior
-- [ ] Store `sourceType` + relevant source fields
-- [ ] Show screenshot alongside form for manual entry
-- [ ] Require user review before saving
+- [X] Store `sourceType` + relevant source fields
+- [X] Show screenshot alongside form for manual entry
+- [X] Require user review before saving
 
 ## Phase 5: Quality & Deployment (Week 5-6)
 
